@@ -16,6 +16,7 @@ exports.renderMain = async (req, res, next) => {
         attributes: ['id', 'nick'],
       },
       order: [['createdAt', 'DESC']],
+      limit: 50,
     });
     res.render('main', {
       title: 'NodeBird',

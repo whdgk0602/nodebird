@@ -4,18 +4,22 @@
     <div class="timeline">
         <div class="followings half">
             <h2>팔로잉 목록</h2>
-            {% if user.Followings %}
+            {% if user.Followings and user.Followings.length > 0 %}
                 {% for following in user.Followings %}
-                    <div>{{following.nick}}</div>
+                    <div class="follow-item"><span class="avatar avatar-sm">{{following.nick[0]}}</span>{{following.nick}}</div>
                 {% endfor %}
+            {% else %}
+                <div class="empty-state">아직 팔로잉한 사람이 없습니다.</div>
             {% endif %}
         </div>
         <div class="followings half">
             <h2>팔로워 목록</h2>
-            {% if user.Followers %}
+            {% if user.Followers and user.Followers.length > 0 %}
                 {% for follower in user.Followers %}
-                    <div>{{follower.nick}}</div>
+                    <div class="follow-item"><span class="avatar avatar-sm">{{follower.nick[0]}}</span>{{follower.nick}}</div>
                 {% endfor %}
+            {% else %}
+                <div class="empty-state">아직 팔로워가 없습니다.</div>
             {% endif %}
         </div>
     </div>

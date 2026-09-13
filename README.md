@@ -47,19 +47,51 @@ Node.js와 Express를 기반으로 만든 트위터 스타일의 SNS 웹 애플�
 ├── models/           # Sequelize 모델 (User, Post, Hashtag)
 ├── middlewares/       # 인증 등 공통 미들웨어
 ├── passport/         # Passport 전략 (local, kakao)
+├── utils/            # 순수 함수 유틸 (해시태그 링크 변환 등)
 ├── views/            # Nunjucks 템플릿
-└── public/           # 정적 파일
+├── public/           # 정적 파일 (CSS, 클라이언트 JS)
+└── docker-compose.yml # 로컬 개발용 MySQL/Redis 컨테이너
 ```
 
 ---
 
 ## 🚀 실행 방법
 
+### 1. 의존성 설치
+
 ```bash
 npm install
+```
+
+### 2. 로컬 DB/Redis 준비 (Docker)
+
+MySQL과 Redis가 로컬에 없다면 [Docker Desktop](https://www.docker.com/products/docker-desktop/)을 설치한 뒤 아래 명령으로 띄울 수 있습니다.
+
+```bash
+docker compose up -d
+```
+
+### 3. 환경 변수 설정
+
+프로젝트 루트에 `.env` 파일을 만들고 아래 값을 채워주세요. (`docker-compose.yml` 기본값 기준)
+
+```
+NODE_ENV=development
+PORT=8001
+SEQUELIZE_PASSWORD=nodebird
+SEQUELIZE_PORT=3307
+REDIS_HOST=localhost
+REDIS_PORT=6379
+COOKIE_SECRET=아무-비밀-문자열
+KAKAO_ID=dummy   # 실제 카카오 로그인을 쓰려면 REST API 키로 교체 (비워두면 서버가 기동되지 않습니다)
+```
+
+이미 로컬에 MySQL이 설치되어 3306 포트를 쓰고 있다면 `docker-compose.yml`의 MySQL 포트 매핑과 `SEQUELIZE_PORT`를 다른 값으로 바꿔주세요.
+
+### 4. 실행
+
+```bash
 npm run dev   # 개발 모드 (nodemon)
 npm start     # 운영 모드 (pm2)
 npm test      # 테스트 실행 (jest)
 ```
-
-실행 전 `.env` 파일에 DB 접속 정보 및 카카오 로그인 키 등 환경 변수를 설정해야 합니다.

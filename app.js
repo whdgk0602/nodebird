@@ -9,13 +9,12 @@ const passport = require('passport');
 const helmet = require('helmet');
 const hpp = require('hpp');
 const redis = require('redis');
-const RedisStore = require('connect-redis')(session);
+const RedisStore = require('connect-redis').default;
 
 dotenv.config();
 const redisClient = redis.createClient({
   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
   password: process.env.REDIS_PASSWORD,
-  legacyMode : true,
 })
 redisClient.connect().catch(console.error);
 const pageRouter = require('./routes/page.js');
@@ -24,15 +23,17 @@ const postRouter = require('./routes/post.js');
 const userRouter = require('./routes/user.js');
 const { sequelize } = require('./models/index.js');
 const passportConfig = require('./passport');
+const formatContent = require('./utils/formatContent');
 
 const app = express();
 passportConfig();
 app.set('port', process.env.PORT || 8001);
 app.set('view engine', 'html');
-nunjucks.configure('views', {
+const nunjucksEnv = nunjucks.configure('views', {
   express: app,
   watch: true,
 });
+nunjucksEnv.addFilter('formatContent', formatContent);
 
 sequelize.sync({force : false})
   .then(()=>{

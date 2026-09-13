@@ -3,27 +3,33 @@
     <head>
         <meta charset="utf-8">
         <title>{{title}}</title>
-        <meta name="viewport" content="width=device-width, user-scalable=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <link rel="stylesheet" href="/main.css">
     </head>
     <body>
+        <div id="error-banner" class="error-banner" hidden></div>
         <div class="container">
-            <div class="profile-wrap">
+            <aside class="profile-wrap">
                 <div class="profile">
                     {% if user and user.id %}
-                        <div class="user-name">{{'안녕하세요!' + user.nick + '님'}}</div>
-                        <div class="half">
-                            <div>팔로잉</div>
-                            <div class="count following-count">{{followingCount}}</div>
-                        </div>
-                        <div class="half">
-                            <div>팔로워</div>
-                            <div class="count follower-count">{{followerCount}}</div>
+                        <div class="avatar">{{user.nick[0]}}</div>
+                        <div class="user-name">{{user.nick}}님, 안녕하세요!</div>
+                        <div class="stats">
+                            <div class="stat half">
+                                <div class="stat-count following-count">{{followingCount}}</div>
+                                <div class="stat-label">팔로잉</div>
+                            </div>
+                            <div class="stat half">
+                                <div class="stat-count follower-count">{{followerCount}}</div>
+                                <div class="stat-label">팔로워</div>
+                            </div>
                         </div>
                         <input id="my-id" type="hidden" value="{{user.id}}">
-                        <a id="my-profile" href="/profile" class="btn">내 프로필</a>
-                        <a id="logout" href="/auth/logout" class="btn">로그아웃</a>
+                        <div class="profile-actions">
+                            <a id="my-profile" href="/profile" class="btn">내 프로필</a>
+                            <a id="logout" href="/auth/logout" class="btn btn-ghost">로그아웃</a>
+                        </div>
                         {% else %}
                             <form id="login-form" action="/auth/login" method="post">
                                 <div class="input-group">
@@ -34,9 +40,11 @@
                                     <label for="password">비밀번호</label>
                                     <input id="password" type="password" name="password" required>
                                 </div>
-                                <a id="join" href="/join" class="btn">회원가입</a>
-                                <button id="login" type="submit" class="btn">로그인</button>
-                                <a id="kakao" href="/auth/kakao" class="btn">카카오톡</a>
+                                <button id="login" type="submit" class="btn btn-primary">로그인</button>
+                                <div class="alt-actions">
+                                    <a id="join" href="/join" class="btn btn-ghost">회원가입</a>
+                                    <a id="kakao" href="/auth/kakao" class="btn btn-kakao">카카오로 시작하기</a>
+                                </div>
                             </form>
                         {% endif %}
                 </div>
@@ -44,18 +52,12 @@
                     Made by&nbsp;
                     <a href="https://www.zerocho.com" target="_blank">ZeroCho</a>
                 </footer>
-            </div>
+            </aside>
             {% block content %}
             {% endblock %}
         </div>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-        <script>
-            window.onload = () => {
-                if(new URL(location.href).searchParams.get('error')){
-                    alert(new URL(location.href).searchParams.get('error'));
-                }
-            };
-        </script>
+        <script src="/js/common.js"></script>
         {% block script %}
         {% endblock %}
     </body>
