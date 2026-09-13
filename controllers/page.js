@@ -1,4 +1,5 @@
 const { User, Post, Hashtag } = require('../models');
+const logger = require('../logger');
 
 exports.renderProfile = (req, res) => {
   res.render('profile', { title: '내 정보 - NodeBird' });
@@ -23,7 +24,7 @@ exports.renderMain = async (req, res, next) => {
       twits: posts,
     });
   } catch (err) {
-    console.error(err);
+    logger.error(err.stack || err);
     next(err);
   }
 }
@@ -45,7 +46,7 @@ exports.renderHashtag = async (req, res, next) => {
       twits: posts,
     });
   } catch (error) {
-    console.error(error);
+    logger.error(error.stack || error);
     return next(error);
   }
 };

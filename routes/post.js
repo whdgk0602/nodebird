@@ -5,6 +5,7 @@ const fs = require('fs');
 
 const { afterUploadImage, uploadPost } = require('../controllers/post');
 const { isLoggedIn } = require('../middlewares');
+const { doubleCsrfProtection } = require('../middlewares/csrf');
 
 const router = express.Router();
 
@@ -28,11 +29,12 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// POST /post/img
-router.post('/img', isLoggedIn, upload.single('img'), afterUploadImage);
+// POST /post/img (AJAX upload, CSRF token arrives via the x-csrf-token header)
+router.post('/img', isLoggedIn, doubleCsrfProtection, upload.single('img'), afterUploadImage);
 
-// POST /post
+// POST /post (multipart form submit, CSRF token arrives as a "_csrf" field -
+// doubleCsrfProtection must run after multer parses the multipart body)
 const uploadNone = multer();
-router.post('/', isLoggedIn, uploadNone.none(), uploadPost);
+router.post('/', isLoggedIn, uploadNone.none(), doubleCsrfProtection, uploadPost);
 
 module.exports = router;

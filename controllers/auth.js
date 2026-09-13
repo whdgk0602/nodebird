@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const User = require('../models/user');
+const logger = require('../logger');
 
 exports.join = async(req, res, next)=>{
     const {email, nick, password} = req.body;
@@ -17,7 +18,7 @@ exports.join = async(req, res, next)=>{
         });
         return res.redirect('/');
     }catch(err){
-        console.error(err);
+        logger.error(err.stack || err);
         return next(err);
     }
 };
@@ -25,7 +26,7 @@ exports.join = async(req, res, next)=>{
 exports.login = (req, res, next)=>{
     passport.authenticate('local', (authError, user, info)=>{
         if(authError){
-            console.error(authError);
+            logger.error(authError.stack || authError);
             return next(authError);
         }
         if(!user){
@@ -33,7 +34,7 @@ exports.login = (req, res, next)=>{
         }
         return req.login(user, (loginError)=>{
             if(loginError){
-                console.error(loginError);
+                logger.error(loginError.stack || loginError);
                 return next(loginError);
             }
             return res.redirect('/');

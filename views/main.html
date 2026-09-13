@@ -5,6 +5,7 @@
         {% if user %}
             <div>
                 <form id="twit-form" class="card-form" action="/post" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
                     <div class="input-group">
                         <textarea id="twit" name="content" maxlength="140" placeholder="무슨 일이 있었나요?"></textarea>
                         <div id="twit-counter" class="char-counter">0 / 140</div>

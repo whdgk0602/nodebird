@@ -10,13 +10,15 @@ const helmet = require('helmet');
 const hpp = require('hpp');
 const redis = require('redis');
 const RedisStore = require('connect-redis').default;
+const { generateCsrfToken } = require('./middlewares/csrf');
+const logger = require('./logger');
 
 dotenv.config();
 const redisClient = redis.createClient({
   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
   password: process.env.REDIS_PASSWORD,
 })
-redisClient.connect().catch(console.error);
+redisClient.connect().catch((err) => logger.error(err.stack));
 const pageRouter = require('./routes/page.js');
 const authRouter = require('./routes/auth.js');
 const postRouter = require('./routes/post.js');
@@ -35,12 +37,15 @@ const nunjucksEnv = nunjucks.configure('views', {
 });
 nunjucksEnv.addFilter('formatContent', formatContent);
 
-sequelize.sync({force : false})
+// Schema is owned by the migrations in migrations/ (run `npm run db:migrate`),
+// not by sync - sync would recreate columns/indexes on every boot and risks
+// dropping data in a real deployment.
+sequelize.authenticate()
   .then(()=>{
     console.log('db연결 성공');
   })
   .catch((err)=>{
-    console.error(err);
+    logger.error(err.stack);
   });
 
   if(process.env.NODE_ENV === 'production'){
@@ -64,7 +69,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 const sessionOptions = {
   resave: false,
-  saveUninitialized: false,
+  // CSRF protection below keys off req.sessionID, which must stay stable between
+  // the GET that renders a form's token and the POST that submits it - including
+  // for anonymous (not-yet-logged-in) visitors. false would only start a session
+  // once something writes to it, giving anonymous visitors a fresh sessionID (and
+  // therefore a mismatched CSRF token) on every request.
+  saveUninitialized: true,
   secret: process.env.COOKIE_SECRET,
   cookie: {
     httpOnly: true,
@@ -80,6 +90,11 @@ app.use(session(sessionOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use((req, res, next) => {
+  res.locals.csrfToken = generateCsrfToken(req, res);
+  next();
+});
+
 app.use('/', pageRouter);
 app.use('/auth', authRouter);
 app.use('/post', postRouter);
@@ -92,6 +107,7 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+  logger.error(err.stack);
   res.locals.message = err.message;
   res.locals.error = process.env.NODE_ENV !== 'production' ? err : {};
   res.status(err.status || 500);

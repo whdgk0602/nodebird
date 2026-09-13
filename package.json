@@ -5,7 +5,9 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production PORT=80 pm2 start server.js -i 0",
     "dev": "nodemon server",
-    "test": "jest"
+    "test": "jest",
+    "db:migrate": "sequelize db:migrate",
+    "db:migrate:undo": "sequelize db:migrate:undo"
   },
   "author": "Keder",
   "license": "MIT",
@@ -15,7 +17,7 @@
     "connect-redis": "^7.1.1",
     "cookie-parser": "^1.4.6",
     "cross-env": "^7.0.3",
-    "csurf": "^1.11.0",
+    "csrf-csrf": "^4.0.3",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",

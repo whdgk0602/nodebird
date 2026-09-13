@@ -2,15 +2,16 @@ const express = require('express');
 const passport = require('passport');
 
 const { isLoggedIn, isNotLoggedIn } = require('../middlewares');
+const { doubleCsrfProtection } = require('../middlewares/csrf');
 const { join, login, logout } = require('../controllers/auth');
 
 const router = express.Router();
 
 //POST /auth/join
-router.post('/join', isNotLoggedIn, join);
+router.post('/join', isNotLoggedIn, doubleCsrfProtection, join);
 
 //POST /auth /login
-router.post('/login', isNotLoggedIn, login);
+router.post('/login', isNotLoggedIn, doubleCsrfProtection, login);
 
 //GET /auth/logout
 router.get('/logout', isLoggedIn, logout);

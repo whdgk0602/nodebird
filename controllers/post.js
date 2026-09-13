@@ -1,4 +1,5 @@
 const {Post, Hashtag} = require('../models');
+const logger = require('../logger');
 
 exports.afterUploadImage = (req, res)=>{
     res.json({url:`img/${req.file.filename}`});
@@ -24,7 +25,7 @@ exports.uploadPost = async(req, res, next)=>{
         }
         res.redirect('/');
     }catch(error){
-        console.error(error);
+        logger.error(error.stack || error);
         next(error);
     }
 };

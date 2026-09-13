@@ -1,4 +1,5 @@
 const { follow } = require('../services/user');
+const logger = require('../logger');
 
 exports.follow = async (req, res, next) => {
   try {
@@ -9,7 +10,7 @@ exports.follow = async (req, res, next) => {
       res.status(404).send('no user');
     }
   } catch (error) {
-    console.error(error);
+    logger.error(error.stack || error);
     next(error);
   }
 };

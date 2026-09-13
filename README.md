@@ -29,7 +29,7 @@ Node.js와 Express를 기반으로 만든 트위터 스타일의 SNS 웹 애플�
 - **bcrypt** – 비밀번호 암호화
 - **Multer** – 이미지 업로드
 - **express-session** + **connect-redis** – 세션 관리
-- **Helmet / HPP / csurf** – 보안 미들웨어
+- **Helmet / HPP / csrf-csrf** – 보안 미들웨어 (CSRF는 Double Submit Cookie 패턴)
 - **Winston** + **Morgan** – 로깅
 - **PM2** – 프로세스 매니저 (운영 환경 실행)
 - **Jest** – 테스트
@@ -45,7 +45,8 @@ Node.js와 Express를 기반으로 만든 트위터 스타일의 SNS 웹 애플�
 ├── controllers/      # 라우트별 비즈니스 로직
 ├── routes/           # 라우터 정의
 ├── models/           # Sequelize 모델 (User, Post, Hashtag)
-├── middlewares/       # 인증 등 공통 미들웨어
+├── migrations/       # Sequelize CLI 마이그레이션 (스키마는 sync가 아닌 마이그레이션으로 관리)
+├── middlewares/       # 인증, CSRF 등 공통 미들웨어
 ├── passport/         # Passport 전략 (local, kakao)
 ├── utils/            # 순수 함수 유틸 (해시태그 링크 변환 등)
 ├── views/            # Nunjucks 템플릿
@@ -88,7 +89,15 @@ KAKAO_ID=dummy   # 실제 카카오 로그인을 쓰려면 REST API 키로 교�
 
 이미 로컬에 MySQL이 설치되어 3306 포트를 쓰고 있다면 `docker-compose.yml`의 MySQL 포트 매핑과 `SEQUELIZE_PORT`를 다른 값으로 바꿔주세요.
 
-### 4. 실행
+### 4. DB 마이그레이션
+
+스키마는 `sequelize.sync()`가 아니라 `migrations/`의 마이그레이션 파일로 관리합니다. DB를 처음 준비할 때(또는 초기화했을 때) 한 번 실행해주세요.
+
+```bash
+npm run db:migrate
+```
+
+### 5. 실행
 
 ```bash
 npm run dev   # 개발 모드 (nodemon)

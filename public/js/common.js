@@ -1,3 +1,8 @@
+const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+if (csrfMeta && csrfMeta.content) {
+  axios.defaults.headers.common['x-csrf-token'] = csrfMeta.content;
+}
+
 function showErrorBanner(message) {
   const banner = document.getElementById('error-banner');
   if (!banner || !message) return;

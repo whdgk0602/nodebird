@@ -3,6 +3,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 
 const User = require('../models/user');
+const logger = require('../logger');
 
 module.exports = () => {
   passport.use(new LocalStrategy({
@@ -23,7 +24,7 @@ module.exports = () => {
         done(null, false, { message: '가입되지 않은 회원입니다.' });
       }
     } catch (error) {
-      console.error(error);
+      logger.error(error.stack || error);
       done(error);
     }
   }));
