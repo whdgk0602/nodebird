@@ -51,7 +51,8 @@ Node.js와 Express를 기반으로 만든 트위터 스타일의 SNS 웹 애플�
 ├── utils/            # 순수 함수 유틸 (해시태그 링크 변환 등)
 ├── views/            # Nunjucks 템플릿
 ├── public/           # 정적 파일 (CSS, 클라이언트 JS)
-└── docker-compose.yml # 로컬 개발용 MySQL/Redis 컨테이너
+├── docker-compose.yml # 로컬 개발용 MySQL/Redis 컨테이너
+└── render.yaml       # Render 배포용 Blueprint
 ```
 
 ---
@@ -104,3 +105,53 @@ npm run dev   # 개발 모드 (nodemon)
 npm start     # 운영 모드 (pm2)
 npm test      # 테스트 실행 (jest)
 ```
+
+---
+
+## ☁️ 무료 배포 (Render + Aiven + Upstash)
+
+이 앱은 Nunjucks로 서버에서 화면을 직접 그리는 **단일 Express 앱**이라, 프론트/백엔드를 따로 배포하지 않고 **①앱 서버, ②MySQL, ③Redis** 3곳만 준비하면 됩니다. 아래는 카드 등록 없이 쓸 수 있는 무료 조합입니다.
+
+| 구성 요소 | 서비스 | 비고 |
+|---|---|---|
+| 앱 서버 | [Render](https://render.com) Web Service (Free) | 512MB RAM, 월 750시간, 15분 미사용 시 슬립(첫 요청 30~60초 지연) |
+| MySQL | [Aiven](https://aiven.io/free-mysql-database) | 카드 등록 없이 영구 무료, 1GB 저장공간 |
+| Redis | [Upstash](https://upstash.com) | 월 50만 커맨드, 256MB |
+
+### 1) Aiven MySQL 만들기
+
+1. [Aiven](https://aiven.io/free-mysql-database)에 가입하고 무료 MySQL 서비스를 생성합니다.
+2. 서비스 개요 페이지에서 **Host, Port, User, Password, Default database name**을 확인합니다.
+
+### 2) Upstash Redis 만들기
+
+1. [Upstash](https://upstash.com) 콘솔에서 Redis 데이터베이스를 생성합니다.
+2. 데이터베이스 상세 페이지에서 TLS 연결 문자열(`rediss://default:비밀번호@호스트:포트` 형태)을 복사합니다.
+
+### 3) 운영 DB에 마이그레이션 적용
+
+로컬에서 운영 DB를 가리키도록 환경변수를 임시로 지정해 마이그레이션을 한 번 실행합니다. (Render 무료 플랜은 배포 전 커맨드를 지원하지 않아 수동으로 실행합니다.)
+
+```bash
+DB_HOST=<Aiven host> DB_PORT=<Aiven port> DB_USERNAME=<Aiven user> DB_PASSWORD=<Aiven password> DB_NAME=<Aiven db name> DB_SSL=true NODE_ENV=production npx sequelize db:migrate
+```
+
+### 4) Render에 배포
+
+1. GitHub 저장소를 Render에 연결하면 저장소 루트의 `render.yaml`을 인식해 서비스가 자동 구성됩니다 ([Blueprint](https://render.com/docs/blueprint-spec) 방식).
+2. Render 대시보드에서 아래 환경변수를 채워넣습니다 (`render.yaml`에 `sync: false`로 표시된 값들).
+
+```
+COOKIE_SECRET=충분히 긴 임의의 문자열
+DB_HOST=<Aiven host>
+DB_PORT=<Aiven port>
+DB_USERNAME=<Aiven user>
+DB_PASSWORD=<Aiven password>
+DB_NAME=<Aiven db name>
+REDIS_URL=<Upstash rediss:// 연결 문자열>
+KAKAO_ID=dummy   # 실제 카카오 로그인을 쓰려면 REST API 키로 교체
+```
+
+3. 배포가 끝나면 Render가 준 `https://*.onrender.com` 주소로 접속해 동작을 확인합니다.
+
+**참고**: `DB_SSL`은 `render.yaml`에 이미 `true`로 설정되어 있고, 기본적으로 Aiven의 인증서를 검증하지 않는 완화 모드(`rejectUnauthorized: false`)로 접속합니다. 트래픽은 여전히 TLS로 암호화되며, 학습용 소규모 프로젝트에는 충분한 수준입니다. 더 엄격한 인증서 검증이 필요하면 `DB_SSL_REJECT_UNAUTHORIZED=true`로 설정하고 Aiven이 제공하는 CA 인증서를 별도로 연결해야 합니다.

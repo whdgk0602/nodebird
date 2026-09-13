@@ -14,10 +14,15 @@ const { generateCsrfToken } = require('./middlewares/csrf');
 const logger = require('./logger');
 
 dotenv.config();
-const redisClient = redis.createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-  password: process.env.REDIS_PASSWORD,
-})
+// REDIS_URL (e.g. Upstash's rediss://default:PASSWORD@HOST:PORT) takes over in
+// production - its scheme decides plain vs TLS, so no separate password field.
+// Local dev keeps using REDIS_HOST/REDIS_PORT from docker-compose's .env.
+const redisClient = process.env.REDIS_URL
+  ? redis.createClient({ url: process.env.REDIS_URL })
+  : redis.createClient({
+    url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    password: process.env.REDIS_PASSWORD,
+  });
 redisClient.connect().catch((err) => logger.error(err.stack));
 const pageRouter = require('./routes/page.js');
 const authRouter = require('./routes/auth.js');
