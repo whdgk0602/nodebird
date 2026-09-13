@@ -1,0 +1,42 @@
+{% macro twitItem(twit, user, followingIdList) %}
+    <div class="twit">
+        <input type="hidden" value="{{twit.User.id}}" class="twit-user-id">
+        <input type="hidden" value="{{twit.id}}" class="twit-id">
+        <div class="twit-avatar">{{twit.User.nick[0]}}</div>
+        <div class="twit-body">
+            <div class="twit-head">
+                <span class="twit-author">{{twit.User.nick}}</span>
+                {% if user and not followingIdList.includes(twit.User.id) and twit.User.id !== user.id %}
+                    <button class="twit-follow">팔로우하기</button>
+                {% endif %}
+            </div>
+            <div class="twit-content">{{twit.content | formatContent | safe}}</div>
+            {% if twit.img %}
+                <div class="twit-img"><img src="{{twit.img}}" alt="섬네일"></div>
+            {% endif %}
+            <div class="comments">
+                <button type="button" class="comment-toggle">댓글 {{twit.Comments.length}}개</button>
+                <div class="comment-list" hidden>
+                    {% for comment in twit.Comments %}
+                        <div class="comment" data-comment-id="{{comment.id}}">
+                            <span class="comment-author">{{comment.User.nick}}</span>
+                            <span class="comment-content">{{comment.content}}</span>
+                            {% if user and comment.User.id === user.id %}
+                                <button type="button" class="comment-delete">삭제</button>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="comment-empty">아직 댓글이 없습니다.</div>
+                    {% endfor %}
+                    {% if user %}
+                        <form class="comment-form">
+                            <input type="hidden" class="comment-post-id" value="{{twit.id}}">
+                            <input type="text" class="comment-input" placeholder="댓글을 입력하세요" maxlength="140">
+                            <button type="submit" class="btn">등록</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}

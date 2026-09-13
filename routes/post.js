@@ -3,7 +3,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const { afterUploadImage, uploadPost } = require('../controllers/post');
+const { afterUploadImage, uploadPost, loadMorePosts } = require('../controllers/post');
+const { create: createComment, remove: removeComment } = require('../controllers/comment');
 const { isLoggedIn } = require('../middlewares');
 const { doubleCsrfProtection } = require('../middlewares/csrf');
 
@@ -36,5 +37,14 @@ router.post('/img', isLoggedIn, doubleCsrfProtection, upload.single('img'), afte
 // doubleCsrfProtection must run after multer parses the multipart body)
 const uploadNone = multer();
 router.post('/', isLoggedIn, uploadNone.none(), doubleCsrfProtection, uploadPost);
+
+// GET /post/more?lastId=&hashtag= (AJAX pagination, public - no auth/CSRF needed for a GET)
+router.get('/more', loadMorePosts);
+
+// POST /post/:id/comment (AJAX, JSON body, CSRF token via header)
+router.post('/:id/comment', isLoggedIn, doubleCsrfProtection, createComment);
+
+// POST /post/:postId/comment/:commentId/delete (AJAX, CSRF token via header)
+router.post('/:postId/comment/:commentId/delete', isLoggedIn, doubleCsrfProtection, removeComment);
 
 module.exports = router;

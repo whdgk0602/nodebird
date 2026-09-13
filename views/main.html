@@ -30,25 +30,16 @@
                 {% if twits.length === 0 %}
                     <div class="empty-state">아직 게시글이 없습니다. 첫 트윗을 남겨보세요!</div>
                 {% endif %}
-                {% for twit in twits %}
-                    <div class="twit">
-                        <input type="hidden" value="{{twit.User.id}}" class="twit-user-id">
-                        <input type="hidden" value="{{twit.id}}" class="twit-id">
-                        <div class="twit-avatar">{{twit.User.nick[0]}}</div>
-                        <div class="twit-body">
-                            <div class="twit-head">
-                                <span class="twit-author">{{twit.User.nick}}</span>
-                                {% if user and not followingIdList.includes(twit.User.id) and twit.User.id !== user.id %}
-                                    <button class="twit-follow">팔로우하기</button>
-                                {% endif %}
-                            </div>
-                            <div class="twit-content">{{twit.content | formatContent | safe}}</div>
-                            {% if twit.img %}
-                                <div class="twit-img"><img src="{{twit.img}}" alt="섬네일"></div>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
+                {% include "_twits.html" %}
+                {% if twits.length === 10 %}
+                    <button
+                        type="button"
+                        id="load-more"
+                        class="btn load-more"
+                        data-last-id="{{twits[twits.length - 1].id}}"
+                        data-hashtag="{{hashtag or ''}}"
+                    >더보기</button>
+                {% endif %}
             </div>
     </div>
 {% endblock %}

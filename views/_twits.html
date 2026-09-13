@@ -1,0 +1,4 @@
+{% import "twit.html" as twitMacro %}
+{% for twit in twits %}
+    {{ twitMacro.twitItem(twit, user, followingIdList) }}
+{% endfor %}
